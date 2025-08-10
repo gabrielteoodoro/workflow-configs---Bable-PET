@@ -1,0 +1,51 @@
+{
+  "test_scenarios": [
+    {
+      "id": "scenario_001",
+      "name": "Teste Básico de Funcionalidade",
+      "category": "basic_functionality",
+      "input": {
+        "message": "Teste de funcionalidade básica",
+        "context": {}
+      },
+      "expected_outcome": {
+        "should_contain": [
+          "resposta",
+          "ajuda"
+        ],
+        "should_not_contain": [
+          "erro",
+          "desculpe"
+        ],
+        "max_response_time": 5.0,
+        "min_quality_score": 7.0
+      },
+      "weight": 1.0
+    },
+    {
+      "id": "scenario_002",
+      "name": "Teste de Qualidade de Resposta",
+      "category": "response_quality",
+      "input": {
+        "message": "Como posso melhorar meu workflow?",
+        "context": {
+          "user_type": "advanced"
+        }
+      },
+      "expected_outcome": {
+        "should_contain": [
+          "sugestões",
+          "otimização"
+        ],
+        "max_response_time": 3.0,
+        "provides_actionable_advice": true
+      },
+      "weight": 1.5
+    }
+  ],
+  "performance_targets": {
+    "min_success_rate": 0.85,
+    "max_avg_response_time": 2.5,
+    "min_quality_score": 8.0
+  }
+}
