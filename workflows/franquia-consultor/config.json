@@ -1,0 +1,24 @@
+{
+  "workflow_id": "wf_franquia_consultor_001",
+  "name": "Franquia - Consultor",
+  "version": "1.0.0",
+  "n8n_workflow_id": "ZrbTnMDgBq18N3xv",
+  "status": "inactive",
+  "auto_optimization": {
+    "enabled": true,
+    "frequency": "daily",
+    "performance_threshold": 0.85,
+    "last_optimization": null
+  },
+  "current_performance": {
+    "success_rate": 0.0,
+    "avg_response_time": 0.0,
+    "total_tests": 0,
+    "last_updated": null
+  },
+  "settings": {
+    "max_tokens": 1000,
+    "temperature": 0.7,
+    "timeout": 30
+  }
+}
