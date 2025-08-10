@@ -1,0 +1,15 @@
+{
+  "system_metrics": {
+    "total_workflows": 6,
+    "active_workflows": 0,
+    "total_ai_nodes": 0,
+    "last_system_check": "2025-08-10T14:12:42.434351",
+    "system_health": "healthy"
+  },
+  "performance_summary": {
+    "average_success_rate": 0.0,
+    "average_response_time": 0.0,
+    "total_optimizations": 0,
+    "last_optimization": null
+  }
+}
