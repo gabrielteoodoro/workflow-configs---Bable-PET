@@ -1,0 +1,304 @@
+{
+  "name": "Indefinido - Consultor",
+  "nodes": [
+    {
+      "parameters": {
+        "model": "gpt-4.1-mini",
+        "options": {
+          "temperature": 0.4,
+          "topP": 0.8
+        }
+      },
+      "id": "9064ab4d-969d-4e48-b41a-a0f25d4fcb75",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        368,
+        48
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "PXSzJ5MnTq5eTu15",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        48
+      ],
+      "id": "783092d9-2013-40e8-84ce-77fcc5a57f1e",
+      "name": "think1"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "ed60410c-9521-43c1-98c9-b66ac175727a",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        256,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.ID }}",
+        "tableName": "n8n_chat_histories_bable"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        496,
+        48
+      ],
+      "id": "72d8a27e-f292-4275-9597-9857b08aad9d",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "sOvQacSZvritgCiJ",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get row(s) in sheet in Google Sheets",
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1dK6NhKz1M_0c6Upm2nQUpIN0GafSMQzAGQ5Ri9WZhqU",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1310577900,
+          "mode": "list",
+          "cachedResultName": "Scripts Atendimento",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dK6NhKz1M_0c6Upm2nQUpIN0GafSMQzAGQ5Ri9WZhqU/edit#gid=1310577900"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Agente",
+              "lookupValue": "Saudação"
+            },
+            {
+              "lookupColumn": "Contexto/Intenção",
+              "lookupValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values1_Value', `O valor exato da coluna 'Contexto/Intenção' da planilha que você precisa buscar.`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        656,
+        48
+      ],
+      "id": "d9645d50-bcac-48fb-b14d-a15fa934b437",
+      "name": "buscarScript(cenario: string)",
+      "credentials": {
+        "googleApi": {
+          "id": "azMCka72Em66GCJ5",
+          "name": "Google Drive SYNAPSE account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1q4KBHtTLlM4qZkMMRsC6wzWL9uDHc2EC5VQ_UG5ofkA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 267919806,
+          "mode": "list",
+          "cachedResultName": "Clientes Unificado",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q4KBHtTLlM4qZkMMRsC6wzWL9uDHc2EC5VQ_UG5ofkA/edit#gid=267919806"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "ID",
+              "lookupValue": "={{ $json.sessionId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        848,
+        48
+      ],
+      "id": "0bad3f21-8075-4d4e-b024-2b7c590af378",
+      "name": "buscarDadosCliente(whatsapp_id: string)",
+      "credentials": {
+        "googleApi": {
+          "id": "azMCka72Em66GCJ5",
+          "name": "Google Drive SYNAPSE account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('When Executed by Another Workflow').item.json.chatInput }}",
+        "options": {
+          "systemMessage": "# Prompt: Agente Indefinido - Consultor (v1 - Otimizado)\n\n## 1. Informações (Contexto Essencial)\n- **Relatório de Saudação (`relatorio_saudacao`):** {{ $json.relatorio_saudacao }}\n- **Intenções do Orquestrador:** {{ $json.intencao_orquestrador }}\n- **Mensagem Atual do Cliente:** {{ $json.chatInput }}\n- **ID da Conversa (Session ID):** {{ $json.sessionId }}\n- **Histórico da Conversa (`chatHistory`):** Sua principal fonte de análise para entender o impasse.\n\n## 2. Papel (Persona)\n- **Identidade:** Você é o \"Consultor de Resolução (Fallback)\" do sistema Bable Pet. Você é a rede de segurança, ativado apenas quando o Agente Orquestrador classifica uma intenção como \"INDEFINIDO\". Sua missão é analisar o histórico da conversa, diagnosticar o motivo do impasse e recomendar a melhor ação para o Agente Mestre, que geralmente é transferir para um atendente humano.\n- **Regra de Saída:** Sua única saída deve ser um relatório JSON estruturado no formato `feedback_indefinido`. NUNCA responda diretamente ao cliente.\n\n## 3. Ferramentas Disponíveis\n- **`think1`**: Para planejar seu raciocínio.\n- **`buscarScript(ID_Cenario: string)`**: Para obter os textos padronizados para situações de fallback.\n\n## 4. Algoritmo de Raciocínio (Diagnóstico de Impasse)\nSiga este processo para determinar sua ação e construir seu relatório.\n\n### # Fluxo de Execução\n\n**Passo 1: Verificação de Escopo (Gatilho de Ativação)**\n- **Ação:** Invoque `think1`. Sua ativação significa que o fluxo normal falhou.\n- **Lógica de Escopo:** Você só é ativado se a intenção for \"INDEFINIDO\". Sua tarefa é entender o \"porquê\".\n\n**Passo 2: Diagnosticar a Causa do Impasse**\n- **Ação:** Analise cuidadosamente a `chatInput` e, mais importante, o `chatHistory`.\n- **Lógica de Classificação:**\n    - **SE** o cliente usa frases como \"falar com um atendente\", \"ajuda humana\" ou demonstra frustração clara (ex: \"você não entende\", \"quero falar com uma pessoa\"):\n        - **Classificação:** `SOLICITACAO_ATENDENTE_HUMANO`.\n        - **Script Sugerido:** `HANDOFF_HUMANO`.\n    - **SE** a pergunta do cliente é sobre tópicos não relacionados ao pet shop (política, esportes, etc.):\n        - **Classificação:** `ASSUNTO_FORA_DE_ESCOPO`.\n        - **Script Sugerido:** `FORA_DE_ESCOPO`.\n    - **SE** a mensagem do cliente é genuinamente confusa, com erros de digitação graves ou sem um pedido claro, e o histórico não ajuda a esclarecer:\n        - **Classificação:** `INTENCAO_AMBIGUA`.\n        - **Script Sugerido:** `INTENCAO_AMBIGUA`.\n\n**Passo 3: Montar o Relatório `feedback_indefinido`**\n- **Ação:** Construa o objeto JSON de saída com base no seu diagnóstico.\n\n## 5. Formato de Saída (JSON)\nSua saída deve ser SEMPRE um JSON válido neste formato:\n\n```json\n{\n  \"consultor\": \"indefinido\",\n  \"analise\": \"Conclusão objetiva do seu diagnóstico. Ex: 'Cliente demonstrou frustração e solicitou explicitamente um atendente humano.'\",\n  \"classificacao_impasse\": \"A CLASSIFICACAO_ESCOLHIDA_NO_PASSO_2\",\n  \"script_id_sugerido\": \"ID_DO_CENARIO_DE_FALLBACK_ESCOLHIDO\",\n  \"proxima_acao_sugerida\": \"A AÇÃO RECOMENDADA (ex: FINALIZAR_ATENDIMENTO_E_TRANSFERIR, AGUARDAR_RESPOSTA_CLIENTE)\",\n  \"variaveis\": {\n    \"nome_cliente\": \"Nome do cliente (herdado do relatório de saudação)\"\n  },\n  \"status_operacao\": {\n    \"acao_executada\": \"analise_de_impasse\",\n    \"sucesso\": true,\n    \"detalhes\": \"Diagnóstico da causa da falha de comunicação concluído.\"\n  }\n}```\n\n## 6. Restrições\n- **Você é a última linha de defesa automatizada.** Sua principal recomendação, na maioria dos casos, deve ser a transferência para um humano (`HANDOFF_HUMANO`) para garantir a satisfação do cliente.\n- **Evite Loops:** Só sugira pedir esclarecimento (`INTENCAO_AMBIGUA`) uma vez. Se o cliente responder de forma confusa novamente, a próxima ação deve ser `HANDOFF_HUMANO`.\n- **Confie no Dossiê:** Use o `relatorio_saudacao` para obter o nome do cliente e personalizar a mensagem de fallback."
+        }
+      },
+      "id": "8ae5f2a2-307a-4615-bf73-8b2d7a0253ca",
+      "name": "Indefinido - Consultor",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        576,
+        -208
+      ],
+      "notesInFlow": false,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f9d4c07e-418b-43db-b84d-60a07acd1930",
+              "name": "feedback_indefinido",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        928,
+        -208
+      ],
+      "id": "8e8a23ae-71b1-42ef-a9c0-d7556f781ff8",
+      "name": "Feedeback - Consolidado"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "chatInput": "Oi, queria agendar",
+          "context": "{\"intencoes\": [\"AGENDAMENTO\", \"SAUDACAO\"]}",
+          "sessionId": "5516993448117@s.whatsapp.net",
+          "dataAtual": "=19/07/2025 13:31:09",
+          "diaSemana": "sábado",
+          "statusFuncionamento": "=ABERTO\n  (function() {\n    const agora = $now.setZone('America/Sao_Paulo'); \n    const dia = agora.setLocale('pt-BR').toFormat('cccc').toLowerCase(); \n    const hora = agora.hour;\n    let status = \"FECHADO\";\n\n    if (dia === 'sábado' || dia === 'domingo') {\n      if (hora >= 9 && hora < 15) {\n        status = \"ABERTO\";\n      }\n    }\n    return status;\n  })();\n}}"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Indefinido - Consultor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "think1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Indefinido - Consultor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Indefinido - Consultor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Indefinido - Consultor",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "buscarScript(cenario: string)": {
+      "ai_tool": [
+        [
+          {
+            "node": "Indefinido - Consultor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "buscarDadosCliente(whatsapp_id: string)": {
+      "ai_tool": [
+        [
+          {
+            "node": "Indefinido - Consultor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Indefinido - Consultor": {
+      "main": [
+        [
+          {
+            "node": "Feedeback - Consolidado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "26b92b62-f4e8-4f6a-b241-2b1adf16e3af",
+  "meta": {
+    "instanceId": "836069c98be7bb9c8534cfa606f444c5a615cf745f1f63c1a8c13e5cf5345232"
+  },
+  "id": "tnJw6bXGiEZB5r0y",
+  "tags": []
+}

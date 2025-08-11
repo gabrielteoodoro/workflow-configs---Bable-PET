@@ -1,0 +1,789 @@
+{
+  "name": "Integração CHAT WOOT e Evolution API - Bable Pet",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "3d3c9aa0-361c-4284-9ebc-c6a2b77257f5",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -336,
+        144
+      ],
+      "id": "f52106c3-6887-4911-8915-7bad9a35e8c8",
+      "name": "Ouvinte Webhook Chatwoot",
+      "webhookId": "3d3c9aa0-361c-4284-9ebc-c6a2b77257f5"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "DUOuKlAbIvwd9c3v",
+          "mode": "list",
+          "cachedResultName": "Agente Orquestrador e Mestre - Bable Pet"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        128
+      ],
+      "id": "1e7f6dc6-4f1f-4414-8194-57fa2c036b4b",
+      "name": "Execute Workflow"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "id": "95dc7563-0f58-4cbf-93cf-cda02acbd105",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        768,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $('(Anti-Loop)').item.json.body.conversation.messages[0].sender.identifier }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        112
+      ],
+      "id": "143911a0-6551-41c3-8671-d5bc69afcf7c",
+      "name": "DELETE HISTORY",
+      "credentials": {
+        "redis": {
+          "id": "96RDitj6Ztnu6TwO",
+          "name": "Redis account 2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        112
+      ],
+      "id": "c9522610-0853-47c9-867e-a72490059cc1",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "bd6c6ac4-8ebd-4d14-9935-1fd270106c48",
+                    "leftValue": "={{ $json.messages.match(/https:\\/\\/.*\\.(jpeg|jpg|png|webp)/g) !== null }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Imagem"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "8a8907db-2f29-4fc3-a50d-264a2c5d015e",
+                    "leftValue": "={{ $json.messages.match(/https:\\/\\/.*\\.(wmv|mp4|mov|mkv)/g) !== null}}",
+                    "rightValue": "=",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Video"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.messages !== undefined && $json.messages !== null && $json.messages !== '' }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "00619960-8dfe-4358-bcae-5d11736584ad"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Texto"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c5ac5605-a396-4de6-816d-f2be0f8b0864",
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        944,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "agenteBublePetWoot",
+        "remoteJid": "={{ $('Ouvinte Webhook Chatwoot').item.json.body.conversation.messages[0].sender.identifier }}",
+        "messageText": "={{ $json.messages }}",
+        "options_message": {
+          "delay": 1200
+        }
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        1216,
+        304
+      ],
+      "id": "963aab24-5252-4ff1-baca-e70f038b5be1",
+      "name": "Response WhatsApp",
+      "credentials": {
+        "evolutionApi": {
+          "id": "4v2eoHRZNWi5YB6f",
+          "name": "Evolution Inst_Bable PET"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "id": "04c4f03b-d75a-4114-b7e9-553dc8b7f000",
+      "name": "Loop Over Items1",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        736,
+        -656
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $('Execute Workflow').item.json.contactIdentifier }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        -688
+      ],
+      "id": "71dfa296-6694-41cb-afab-d1e0cbfb31e7",
+      "name": "DELETE HISTORY1",
+      "credentials": {
+        "redis": {
+          "id": "96RDitj6Ztnu6TwO",
+          "name": "Redis account 2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        -688
+      ],
+      "id": "fa370c7e-4db5-4412-9a80-cb4905f9827b",
+      "name": "Limit1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "bd6c6ac4-8ebd-4d14-9935-1fd270106c48",
+                    "leftValue": "={{ $json.messages.match(/https:\\/\\/.*\\.(jpeg|jpg|png|webp)/g) !== null }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Imagem"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "8a8907db-2f29-4fc3-a50d-264a2c5d015e",
+                    "leftValue": "={{ $json.messages.match(/https:\\/\\/.*\\.(wmv|mp4|mov|mkv)/g) !== null}}",
+                    "rightValue": "=",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Video"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.logged_message !== undefined && $json.logged_message !== null && $json.logged_message !== '' }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "00619960-8dfe-4358-bcae-5d11736584ad"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Texto"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fb3ad989-b433-4a4d-8bd5-795acd8bd202",
+      "name": "Switch1",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        912,
+        -544
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "Messages",
+        "operation": "Create A New Message In A Conversation",
+        "account_id": "={{ $('Execute Workflow').item.json.chatwoot_account_id }}",
+        "conversation_id": "={{ $('Execute Workflow').item.json.chatwoot_conversation_id }}",
+        "content": "={{ $('Execute Workflow').item.json.logged_message }}",
+        "private": false,
+        "content_type": "={{ $('Ouvinte Webhook Chatwoot').item.json.body.conversation.messages[0].content_type }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-chatwoot.chatWoot",
+      "typeVersion": 1,
+      "position": [
+        1392,
+        -480
+      ],
+      "id": "d9001d67-9c21-4411-a285-df445cf61b0b",
+      "name": "Log Response in Chatwoot1",
+      "credentials": {
+        "chatwootApi": {
+          "id": "30uQsNZn4H7D2jJD",
+          "name": "ChatWoot API"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c2694e83-9f8c-412c-ac8f-fc81d5c94382",
+              "leftValue": "={{ $json.body.conversation.messages[0].sender_type }}",
+              "rightValue": "Contact",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -144,
+        144
+      ],
+      "id": "2bbe8c42-474b-4ef8-be32-13c483fed766",
+      "name": "(Anti-Loop)"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "messages",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        432,
+        128
+      ],
+      "id": "083e4848-4d41-43c4-98b4-c2280a8c1d73",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "logged_message",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        416,
+        -400
+      ],
+      "id": "9a33a023-7fe7-4bd8-9035-1f7136ec30ca",
+      "name": "Split Out1"
+    }
+  ],
+  "pinData": {
+    "Ouvinte Webhook Chatwoot": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.synapseautointeligente.com.br",
+            "user-agent": "rest-client/2.1.0 (linux-musl aarch64) ruby/3.4.4p34",
+            "content-length": "4530",
+            "accept": "application/json",
+            "accept-encoding": "gzip;q=1.0,deflate;q=0.6,identity;q=0.3",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "n8n.synapseautointeligente.com.br",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "50704460429e",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "account": {
+              "id": 2,
+              "name": "Synapse Automações Inteligentes"
+            },
+            "additional_attributes": {},
+            "content_attributes": {},
+            "content_type": "text",
+            "content": "Gostaria de agendar",
+            "conversation": {
+              "additional_attributes": {},
+              "can_reply": true,
+              "channel": "Channel::Api",
+              "contact_inbox": {
+                "id": 6,
+                "contact_id": 2,
+                "inbox_id": 4,
+                "source_id": "ad58e367-35ef-4353-bc4c-4bb5c6a0a360",
+                "created_at": "2025-07-16T16:30:01.544Z",
+                "updated_at": "2025-07-16T16:30:01.544Z",
+                "hmac_verified": false,
+                "pubsub_token": "3HKrTnRYh3ueCSYsG7EqLF2v"
+              },
+              "id": 4,
+              "inbox_id": 4,
+              "messages": [
+                {
+                  "id": 429,
+                  "content": "Gostaria de agendar",
+                  "account_id": 2,
+                  "inbox_id": 4,
+                  "conversation_id": 4,
+                  "message_type": 0,
+                  "created_at": 1753659002,
+                  "updated_at": "2025-07-27T23:30:02.693Z",
+                  "private": false,
+                  "status": "sent",
+                  "source_id": "WAID:BA51D54DD5AD1660E451B0114E369124",
+                  "content_type": "text",
+                  "content_attributes": {},
+                  "sender_type": "Contact",
+                  "sender_id": 2,
+                  "external_source_ids": {},
+                  "additional_attributes": {},
+                  "processed_message_content": "Gostaria de agendar",
+                  "sentiment": {},
+                  "conversation": {
+                    "assignee_id": 2,
+                    "unread_count": 2,
+                    "last_activity_at": 1753659002,
+                    "contact_inbox": {
+                      "source_id": "ad58e367-35ef-4353-bc4c-4bb5c6a0a360"
+                    }
+                  },
+                  "sender": {
+                    "additional_attributes": {},
+                    "custom_attributes": {},
+                    "email": null,
+                    "id": 2,
+                    "identifier": "5516993448117@s.whatsapp.net",
+                    "name": "Gabriel Batista",
+                    "phone_number": "+5516993448117",
+                    "thumbnail": "https://chatwoot.synapseautointeligente.com.br/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBHZz09IiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--faf81b188b33df2440a782296716159b06a1b4c2/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2RTNKbGMybDZaVjkwYjE5bWFXeHNXd2RwQWZvdyIsImV4cCI6bnVsbCwicHVyIjoidmFyaWF0aW9uIn19--67ea28d24ee095fb49ecb7d8fc0a316ea10f6266/482877372_9548019198609585_6928739706476523512_n.jpg",
+                    "blocked": false,
+                    "type": "contact"
+                  }
+                }
+              ],
+              "labels": [],
+              "meta": {
+                "sender": {
+                  "additional_attributes": {},
+                  "custom_attributes": {},
+                  "email": null,
+                  "id": 2,
+                  "identifier": "5516993448117@s.whatsapp.net",
+                  "name": "Gabriel Batista",
+                  "phone_number": "+5516993448117",
+                  "thumbnail": "https://chatwoot.synapseautointeligente.com.br/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBHZz09IiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--faf81b188b33df2440a782296716159b06a1b4c2/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2RTNKbGMybDZaVjkwYjE5bWFXeHNXd2RwQWZvdyIsImV4cCI6bnVsbCwicHVyIjoidmFyaWF0aW9uIn19--67ea28d24ee095fb49ecb7d8fc0a316ea10f6266/482877372_9548019198609585_6928739706476523512_n.jpg",
+                  "blocked": false,
+                  "type": "contact"
+                },
+                "assignee": {
+                  "id": 2,
+                  "name": "Gabriel Teodoro Batista",
+                  "available_name": "Gabriel Teodoro Batista",
+                  "avatar_url": "",
+                  "type": "user",
+                  "availability_status": null,
+                  "thumbnail": ""
+                },
+                "team": null,
+                "hmac_verified": false
+              },
+              "status": "open",
+              "custom_attributes": {},
+              "snoozed_until": null,
+              "unread_count": 2,
+              "first_reply_created_at": "2025-07-16T16:38:07.618Z",
+              "priority": null,
+              "waiting_since": 1753659002,
+              "agent_last_seen_at": 1752717500,
+              "contact_last_seen_at": 0,
+              "last_activity_at": 1753659002,
+              "timestamp": 1753659002,
+              "created_at": 1752683401,
+              "updated_at": 1753659002.722044
+            },
+            "created_at": "2025-07-27T23:30:02.693Z",
+            "id": 429,
+            "inbox": {
+              "id": 4,
+              "name": "Recepção Inteligente (Bable Pet)"
+            },
+            "message_type": "incoming",
+            "private": false,
+            "sender": {
+              "account": {
+                "id": 2,
+                "name": "Synapse Automações Inteligentes"
+              },
+              "additional_attributes": {},
+              "avatar": "https://chatwoot.synapseautointeligente.com.br/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBHZz09IiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--faf81b188b33df2440a782296716159b06a1b4c2/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2RTNKbGMybDZaVjkwYjE5bWFXeHNXd2RwQWZvdyIsImV4cCI6bnVsbCwicHVyIjoidmFyaWF0aW9uIn19--67ea28d24ee095fb49ecb7d8fc0a316ea10f6266/482877372_9548019198609585_6928739706476523512_n.jpg",
+              "custom_attributes": {},
+              "email": null,
+              "id": 2,
+              "identifier": "5516993448117@s.whatsapp.net",
+              "name": "Gabriel Batista",
+              "phone_number": "+5516993448117",
+              "thumbnail": "https://chatwoot.synapseautointeligente.com.br/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBHZz09IiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--faf81b188b33df2440a782296716159b06a1b4c2/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2RTNKbGMybDZaVjkwYjE5bWFXeHNXd2RwQWZvdyIsImV4cCI6bnVsbCwicHVyIjoidmFyaWF0aW9uIn19--67ea28d24ee095fb49ecb7d8fc0a316ea10f6266/482877372_9548019198609585_6928739706476523512_n.jpg",
+              "blocked": false
+            },
+            "source_id": "WAID:BA51D54DD5AD1660E451B0114E369124",
+            "event": "message_created"
+          },
+          "webhookUrl": "https://n8n.synapseautointeligente.com.br/webhook/3d3c9aa0-361c-4284-9ebc-c6a2b77257f5",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Ouvinte Webhook Chatwoot": {
+      "main": [
+        [
+          {
+            "node": "(Anti-Loop)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "DELETE HISTORY",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [],
+        [],
+        [
+          {
+            "node": "Response WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Response WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "Limit1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit1": {
+      "main": [
+        [
+          {
+            "node": "DELETE HISTORY1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [],
+        [],
+        [
+          {
+            "node": "Log Response in Chatwoot1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Response in Chatwoot1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "(Anti-Loop)": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "owpm52YxuelorJsi"
+  },
+  "versionId": "27a097e0-a150-4944-a557-719f014f1525",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "836069c98be7bb9c8534cfa606f444c5a615cf745f1f63c1a8c13e5cf5345232"
+  },
+  "id": "4D138Ti5vWDeG91B",
+  "tags": [
+    {
+      "createdAt": "2025-07-15T19:56:00.124Z",
+      "updatedAt": "2025-07-15T19:56:00.124Z",
+      "id": "D0TofufjG8XwWeyI",
+      "name": "chatwoot"
+    },
+    {
+      "createdAt": "2025-07-15T19:56:00.108Z",
+      "updatedAt": "2025-07-15T19:56:00.108Z",
+      "id": "Z9TpvCubHkN4s4aq",
+      "name": "ai-agent"
+    }
+  ]
+}

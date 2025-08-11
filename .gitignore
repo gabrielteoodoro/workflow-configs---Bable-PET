@@ -1,0 +1,15 @@
+# Arquivos com secrets/tokens
+claude-auto-optimizer/.env
+claude-auto-optimizer/.env.generated
+*.env
+**/orquestrador_workflow.json
+claude-auto-optimizer/github_structure_creator.py
+claude-auto-optimizer/setup_gabriel.py.sh
+
+# Arquivos temporários
+.claude/
+.mcp.json
+
+# Logs e caches
+*.log
+*.cache

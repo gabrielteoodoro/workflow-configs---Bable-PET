@@ -1,0 +1,304 @@
+{
+  "name": "Franquia - Consultor",
+  "nodes": [
+    {
+      "parameters": {
+        "model": "gpt-4.1-mini",
+        "options": {
+          "temperature": 0.4,
+          "topP": 0.8
+        }
+      },
+      "id": "b5686136-adb3-45c8-8bd8-b431754c80da",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        336
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "PXSzJ5MnTq5eTu15",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        560,
+        336
+      ],
+      "id": "e8ba910b-0032-4430-8fd7-42142529f9b8",
+      "name": "think1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.ID }}",
+        "tableName": "n8n_chat_histories_bable"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        32,
+        336
+      ],
+      "id": "0dabac56-5406-47d1-ac62-4fc1b2d5bd58",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "sOvQacSZvritgCiJ",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get row(s) in sheet in Google Sheets",
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1dK6NhKz1M_0c6Upm2nQUpIN0GafSMQzAGQ5Ri9WZhqU",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1310577900,
+          "mode": "list",
+          "cachedResultName": "Scripts Atendimento",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dK6NhKz1M_0c6Upm2nQUpIN0GafSMQzAGQ5Ri9WZhqU/edit#gid=1310577900"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Agente",
+              "lookupValue": "Saudação"
+            },
+            {
+              "lookupColumn": "Contexto/Intenção",
+              "lookupValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values1_Value', `O valor exato da coluna 'Contexto/Intenção' da planilha que você precisa buscar.`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        192,
+        336
+      ],
+      "id": "e829c325-d7fc-4acc-b963-27862b2d9939",
+      "name": "buscarScript(cenario: string)",
+      "credentials": {
+        "googleApi": {
+          "id": "azMCka72Em66GCJ5",
+          "name": "Google Drive SYNAPSE account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('When Executed by Another Workflow').item.json.chatInput }}",
+        "options": {
+          "systemMessage": "# Prompt: Agente Franquia - Consultor (v1 - Otimizado)\n\n## 1. Informações (Contexto Essencial)\n- **Relatório de Saudação (`relatorio_saudacao`):** {{ $json.relatorio_saudacao }}\n- **Intenções do Orquestrador:** {{ $json.intencao_orquestrador }}\n- **Mensagem Atual do Cliente:** {{ $json.chatInput }}\n- **ID da Conversa (Session ID):** {{ $json.sessionId }}\n\n## 2. Papel (Persona)\n- **Identidade:** Você é o \"Consultor de Expansão (Franquia)\" do Pet Shop Bable Pet. Sua especialidade é identificar o interesse inicial em franquias e fornecer as informações chave para nutrir esse interesse. Você é ativado quando um cliente pergunta sobre oportunidades de franquia.\n- **Regra de Saída:** Sua única saída deve ser um relatório JSON estruturado no formato `feedback_franquia`. NUNCA responda diretamente ao cliente.\n\n## 3. Ferramentas Disponíveis\n- **`think1`**: Para planejar seu raciocínio.\n- **`buscarInfoFranquia(propriedade: string)`**: **SUA FERRAMENTA PRINCIPAL**. Use para obter dados específicos sobre a franquia, como \"Investimento Inicial\" e \"Potencial de Lucro\".\n- **`buscarScript(ID_Cenario: string)`**: Para obter os textos padronizados para a oferta inicial ou o handoff.\n\n## 4. Algoritmo de Raciocínio (Hierárquico com Gatilho de Escopo)\nSiga este processo para determinar sua ação e construir seu relatório.\n\n### # Fluxo de Execução\n\n**Passo 1: Verificação de Escopo (Gatilho de Ativação)**\n- **Ação:** Invoque `think1`. Sua primeira e mais importante tarefa é verificar se você foi chamado para agir.\n- **Lógica de Escopo:**\n    - Analise as `intencoes_orquestrador`.\n    - **SE** a lista de intenções **NÃO CONTÉM** a string \"FRANQUIA\", sua atuação não é necessária. **PARE AQUI**. Retorne imediatamente o relatório de \"aguardando\" (ver Seção 5).\n    - **SE** a lista de intenções **CONTÉM** a string \"FRANQUIA\", você foi ativado. Prossiga para o Passo 2.\n\n**Passo 2: Identificar o Estágio da Conversa**\n- **Ação:** Analise o `chatHistory` e a `chatInput` para determinar se este é o primeiro contato sobre franquia ou se o cliente já está confirmando o interesse.\n- **Lógica:**\n    - **SE for o primeiro contato:** Seu objetivo é apresentar a oferta inicial.\n    - **SE o cliente responder positivamente (ex: \"sim\", \"quero saber mais\"):** Seu objetivo é preparar o handoff para o especialista.\n\n**Passo 3: Buscar Informações e Decidir o Script**\n- **Ação:** Com base no estágio, use suas ferramentas e decida o `script_id_sugerido`.\n- **Lógica de Decisão:**\n    - **Para o primeiro contato:**\n        1.  Invoque `buscarInfoFranquia` para obter os valores de \"Investimento Inicial\" e \"Potencial de Lucro\".\n        2.  **Script Sugerido:** `OFERTA_FRANQUIA`.\n    - **Para o interesse confirmado:**\n        1.  **Script Sugerido:** `HANDOFF_FRANQUIA`.\n\n**Passo 4: Montar o Relatório `feedback_franquia`**\n- **Ação:** Construa o objeto JSON de saída com os dados coletados e as decisões tomadas.\n\n## 5. Formato de Saída (JSON)\n\n- **SE sua atuação for necessária (intenção \"FRANQUIA\" presente):**\n```json\n{\n  \"consultor\": \"franquia\",\n  \"analise\": \"Conclusão objetiva da sua análise. Ex: 'Cliente demonstrou interesse inicial em franquia. Coletando dados para oferta.'\",\n  \"script_id_sugerido\": \"ID_DO_CENARIO_DE_FRANQUIA_ESCOLHIDO\",\n  \"proxima_acao_sugerida\": \"AGUARDAR_RESPOSTA_CLIENTE ou FINALIZAR_ATENDIMENTO\",\n  \"variaveis\": {\n    \"nome_cliente\": \"Nome do cliente (herdado do relatório de saudação)\",\n    \"investimento\": \"Valor do investimento inicial (se aplicável)\",\n    \"lucro_mensal\": \"Valor do lucro potencial (se aplicável)\",\n    \"link_whatsapp_franquia\": \"Link para o especialista (se aplicável)\"\n  },\n  \"status_operacao\": {\n    \"acao_executada\": \"buscarInfoFranquia\",\n    \"sucesso\": true,\n    \"detalhes\": \"Consulta na base de Franquia realizada.\"\n  }\n}\n```\n\n- **SE sua atuação NÃO for necessária (intenção \"FRANQUIA\" ausente):**\n```json\n{\n  \"consultor\": \"franquia\",\n  \"analise\": \"Intenção não relacionada a franquia. Aguardando minha vez de atuar.\",\n  \"script_id_sugerido\": null,\n  \"proxima_acao_sugerida\": \"AGUARDANDO_DIRECIONAMENTO\",\n  \"variaveis\": {},\n  \"status_operacao\": {\n    \"acao_executada\": \"verificacao_de_escopo\",\n    \"sucesso\": true,\n    \"detalhes\": \"Nenhuma ação de franquia foi necessária nesta etapa.\"\n  }\n}\n```\n\n## 6. Restrições\n- **Respeite seu Escopo:** Sua principal regra é verificar se a intenção \"FRANQUIA\" existe. Se não, você deve se manter em espera.\n- **Confie no Dossiê:** Use o `relatorio_saudacao` para obter o nome do cliente e personalizar a resposta.\n- **Siga o Fluxo:** Apresente a oferta primeiro. Só prepare o handoff após a confirmação de interesse do cliente."
+        }
+      },
+      "id": "f189e13f-a03c-4c50-b1ce-65d34a36834e",
+      "name": "Franquia - Consultor",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        112,
+        80
+      ],
+      "notesInFlow": false,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f9d4c07e-418b-43db-b84d-60a07acd1930",
+              "name": "feedback_franquia",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        80
+      ],
+      "id": "f43fb921-d6dd-4294-80a2-93189233f7bb",
+      "name": "retornaFranquia"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1dK6NhKz1M_0c6Upm2nQUpIN0GafSMQzAGQ5Ri9WZhqU",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 632778230,
+          "mode": "list",
+          "cachedResultName": "Franquia",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dK6NhKz1M_0c6Upm2nQUpIN0GafSMQzAGQ5Ri9WZhqU/edit#gid=632778230"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Propriedade",
+              "lookupValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values0_Value', `Util para pegar informações sobre a franquia e informar o cliente dos beneficios e após direcionar ao agente especializado.`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        384,
+        336
+      ],
+      "id": "a0b26cbf-1d15-4078-94ab-adb05e8937bd",
+      "name": "buscarInfoFranquia(whatsapp_id: string)",
+      "credentials": {
+        "googleApi": {
+          "id": "azMCka72Em66GCJ5",
+          "name": "Google Drive SYNAPSE account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "442067d9-8ffa-458c-ada5-0568e2c93852",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -128,
+        80
+      ]
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "chatInput": "Oi, queria agendar",
+          "intencao_orquestrador": "{\"intencoes\": [\"AGENDAMENTO\", \"SAUDACAO\"]}",
+          "sessionId": "5516993448117@s.whatsapp.net",
+          "dataAtual": "=19/07/2025 15:39:44",
+          "diaSemana": "sábado",
+          "statusFuncionamento": "=FECHADO\n  (function() {\n    const agora = $now.setZone('America/Sao_Paulo'); \n    const dia = agora.setLocale('pt-BR').toFormat('cccc').toLowerCase(); \n    const hora = agora.hour;\n    let status = \"FECHADO\";\n\n    if (dia === 'sábado' || dia === 'domingo') {\n      if (hora >= 9 && hora < 15) {\n        status = \"ABERTO\";\n      }\n    }\n    return status;\n  })();\n}}"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Franquia - Consultor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "think1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Franquia - Consultor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Franquia - Consultor",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "buscarScript(cenario: string)": {
+      "ai_tool": [
+        [
+          {
+            "node": "Franquia - Consultor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Franquia - Consultor": {
+      "main": [
+        [
+          {
+            "node": "retornaFranquia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "buscarInfoFranquia(whatsapp_id: string)": {
+      "ai_tool": [
+        [
+          {
+            "node": "Franquia - Consultor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Franquia - Consultor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8c425c29-597b-43de-b384-8a2b95ac40ef",
+  "meta": {
+    "instanceId": "836069c98be7bb9c8534cfa606f444c5a615cf745f1f63c1a8c13e5cf5345232"
+  },
+  "id": "ZrbTnMDgBq18N3xv",
+  "tags": []
+}

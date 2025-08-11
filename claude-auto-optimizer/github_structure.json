@@ -1,0 +1,487 @@
+{
+  "workflows_detected": [
+    "my-workflow-7",
+    "my-workflow-6",
+    "agente-orquestrador-e-mestre---bable-pet",
+    "agente-apenas-n8n-synapse",
+    "my-workflow-5",
+    "franquia---consultor",
+    "automatiza\u00e7\u00e3o-de-testes",
+    "agente-woot",
+    "modelo-agente-n8n",
+    "sdr-classificador",
+    "prot\u00f3tipo-inicial-bable-pet",
+    "cria\u00e7\u00e3o-de-contratos-automatico",
+    "agendamento---consultor",
+    "monitor-de-erros",
+    "integra\u00e7\u00e3o-whatsapp---teste",
+    "sauda\u00e7\u00e3o---consultor",
+    "comercial---consultor",
+    "monitor-de-erros---bable-pet",
+    "sauda\u00e7\u00e3o---consultor",
+    "faq---consultor",
+    "indefinido---consultor"
+  ],
+  "recommended_structure": {
+    "my-workflow-7": {
+      "workflow_id": "wf_my-workflow-7_001",
+      "name": "My workflow 7",
+      "version": "1.0.0",
+      "n8n_workflow_id": "vAJLbK3yM9hjYhio",
+      "status": "active",
+      "auto_optimization": {
+        "enabled": true,
+        "frequency": "daily",
+        "performance_threshold": 0.85
+      },
+      "current_performance": {
+        "success_rate": 0.0,
+        "avg_response_time": 0.0,
+        "total_tests": 0,
+        "last_updated": null
+      },
+      "settings": {
+        "max_tokens": 1000,
+        "temperature": 0.7,
+        "timeout": 30
+      }
+    },
+    "my-workflow-6": {
+      "workflow_id": "wf_my-workflow-6_001",
+      "name": "My workflow 6",
+      "version": "1.0.0",
+      "n8n_workflow_id": "lDNVv1ZqIrRvc6yn",
+      "status": "active",
+      "auto_optimization": {
+        "enabled": true,
+        "frequency": "daily",
+        "performance_threshold": 0.85
+      },
+      "current_performance": {
+        "success_rate": 0.0,
+        "avg_response_time": 0.0,
+        "total_tests": 0,
+        "last_updated": null
+      },
+      "settings": {
+        "max_tokens": 1000,
+        "temperature": 0.7,
+        "timeout": 30
+      }
+    },
+    "agente-orquestrador-e-mestre---bable-pet": {
+      "workflow_id": "wf_agente-orquestrador-e-mestre---bable-pet_001",
+      "name": "Agente Orquestrador e Mestre - Bable Pet",
+      "version": "1.0.0",
+      "n8n_workflow_id": "DUOuKlAbIvwd9c3v",
+      "status": "active",
+      "auto_optimization": {
+        "enabled": true,
+        "frequency": "daily",
+        "performance_threshold": 0.85
+      },
+      "current_performance": {
+        "success_rate": 0.0,
+        "avg_response_time": 0.0,
+        "total_tests": 0,
+        "last_updated": null
+      },
+      "settings": {
+        "max_tokens": 1000,
+        "temperature": 0.7,
+        "timeout": 30
+      }
+    },
+    "agente-apenas-n8n-synapse": {
+      "workflow_id": "wf_agente-apenas-n8n-synapse_001",
+      "name": "Agente Apenas N8N SYNAPSE",
+      "version": "1.0.0",
+      "n8n_workflow_id": "DhHWBUUwFwrKWy87",
+      "status": "active",
+      "auto_optimization": {
+        "enabled": true,
+        "frequency": "daily",
+        "performance_threshold": 0.85
+      },
+      "current_performance": {
+        "success_rate": 0.0,
+        "avg_response_time": 0.0,
+        "total_tests": 0,
+        "last_updated": null
+      },
+      "settings": {
+        "max_tokens": 1000,
+        "temperature": 0.7,
+        "timeout": 30
+      }
+    },
+    "my-workflow-5": {
+      "workflow_id": "wf_my-workflow-5_001",
+      "name": "My workflow 5",
+      "version": "1.0.0",
+      "n8n_workflow_id": "glTEGihxD5VcxCqM",
+      "status": "active",
+      "auto_optimization": {
+        "enabled": true,
+        "frequency": "daily",
+        "performance_threshold": 0.85
+      },
+      "current_performance": {
+        "success_rate": 0.0,
+        "avg_response_time": 0.0,
+        "total_tests": 0,
+        "last_updated": null
+      },
+      "settings": {
+        "max_tokens": 1000,
+        "temperature": 0.7,
+        "timeout": 30
+      }
+    },
+    "franquia---consultor": {
+      "workflow_id": "wf_franquia---consultor_001",
+      "name": "Franquia - Consultor",
+      "version": "1.0.0",
+      "n8n_workflow_id": "ZrbTnMDgBq18N3xv",
+      "status": "active",
+      "auto_optimization": {
+        "enabled": true,
+        "frequency": "daily",
+        "performance_threshold": 0.85
+      },
+      "current_performance": {
+        "success_rate": 0.0,
+        "avg_response_time": 0.0,
+        "total_tests": 0,
+        "last_updated": null
+      },
+      "settings": {
+        "max_tokens": 1000,
+        "temperature": 0.7,
+        "timeout": 30
+      }
+    },
+    "automatiza\u00e7\u00e3o-de-testes": {
+      "workflow_id": "wf_automatiza\u00e7\u00e3o-de-testes_001",
+      "name": "Automatiza\u00e7\u00e3o de Testes",
+      "version": "1.0.0",
+      "n8n_workflow_id": "82Acs4MdvtxbXF9e",
+      "status": "active",
+      "auto_optimization": {
+        "enabled": true,
+        "frequency": "daily",
+        "performance_threshold": 0.85
+      },
+      "current_performance": {
+        "success_rate": 0.0,
+        "avg_response_time": 0.0,
+        "total_tests": 0,
+        "last_updated": null
+      },
+      "settings": {
+        "max_tokens": 1000,
+        "temperature": 0.7,
+        "timeout": 30
+      }
+    },
+    "agente-woot": {
+      "workflow_id": "wf_agente-woot_001",
+      "name": "Agente Woot",
+      "version": "1.0.0",
+      "n8n_workflow_id": "xmZiNVKqlyCFOL0T",
+      "status": "active",
+      "auto_optimization": {
+        "enabled": true,
+        "frequency": "daily",
+        "performance_threshold": 0.85
+      },
+      "current_performance": {
+        "success_rate": 0.0,
+        "avg_response_time": 0.0,
+        "total_tests": 0,
+        "last_updated": null
+      },
+      "settings": {
+        "max_tokens": 1000,
+        "temperature": 0.7,
+        "timeout": 30
+      }
+    },
+    "modelo-agente-n8n": {
+      "workflow_id": "wf_modelo-agente-n8n_001",
+      "name": "MODELO AGENTE N8N",
+      "version": "1.0.0",
+      "n8n_workflow_id": "d3ZIGFE7waJbj9sm",
+      "status": "active",
+      "auto_optimization": {
+        "enabled": true,
+        "frequency": "daily",
+        "performance_threshold": 0.85
+      },
+      "current_performance": {
+        "success_rate": 0.0,
+        "avg_response_time": 0.0,
+        "total_tests": 0,
+        "last_updated": null
+      },
+      "settings": {
+        "max_tokens": 1000,
+        "temperature": 0.7,
+        "timeout": 30
+      }
+    },
+    "sdr-classificador": {
+      "workflow_id": "wf_sdr-classificador_001",
+      "name": "SDR CLASSIFICADOR",
+      "version": "1.0.0",
+      "n8n_workflow_id": "hXs2A9vJ8kNbOkBU",
+      "status": "active",
+      "auto_optimization": {
+        "enabled": true,
+        "frequency": "daily",
+        "performance_threshold": 0.85
+      },
+      "current_performance": {
+        "success_rate": 0.0,
+        "avg_response_time": 0.0,
+        "total_tests": 0,
+        "last_updated": null
+      },
+      "settings": {
+        "max_tokens": 1000,
+        "temperature": 0.7,
+        "timeout": 30
+      }
+    },
+    "prot\u00f3tipo-inicial-bable-pet": {
+      "workflow_id": "wf_prot\u00f3tipo-inicial-bable-pet_001",
+      "name": "Prot\u00f3tipo Inicial Bable Pet",
+      "version": "1.0.0",
+      "n8n_workflow_id": "md42xoXh4GdCJ0J6",
+      "status": "active",
+      "auto_optimization": {
+        "enabled": true,
+        "frequency": "daily",
+        "performance_threshold": 0.85
+      },
+      "current_performance": {
+        "success_rate": 0.0,
+        "avg_response_time": 0.0,
+        "total_tests": 0,
+        "last_updated": null
+      },
+      "settings": {
+        "max_tokens": 1000,
+        "temperature": 0.7,
+        "timeout": 30
+      }
+    },
+    "cria\u00e7\u00e3o-de-contratos-automatico": {
+      "workflow_id": "wf_cria\u00e7\u00e3o-de-contratos-automatico_001",
+      "name": "Cria\u00e7\u00e3o de Contratos Automatico",
+      "version": "1.0.0",
+      "n8n_workflow_id": "nBt6fIHgcTKQ9R7p",
+      "status": "active",
+      "auto_optimization": {
+        "enabled": true,
+        "frequency": "daily",
+        "performance_threshold": 0.85
+      },
+      "current_performance": {
+        "success_rate": 0.0,
+        "avg_response_time": 0.0,
+        "total_tests": 0,
+        "last_updated": null
+      },
+      "settings": {
+        "max_tokens": 1000,
+        "temperature": 0.7,
+        "timeout": 30
+      }
+    },
+    "agendamento---consultor": {
+      "workflow_id": "wf_agendamento---consultor_001",
+      "name": "Agendamento - Consultor",
+      "version": "1.0.0",
+      "n8n_workflow_id": "KRlswJLa4CmAvWIL",
+      "status": "active",
+      "auto_optimization": {
+        "enabled": true,
+        "frequency": "daily",
+        "performance_threshold": 0.85
+      },
+      "current_performance": {
+        "success_rate": 0.0,
+        "avg_response_time": 0.0,
+        "total_tests": 0,
+        "last_updated": null
+      },
+      "settings": {
+        "max_tokens": 1000,
+        "temperature": 0.7,
+        "timeout": 30
+      }
+    },
+    "monitor-de-erros": {
+      "workflow_id": "wf_monitor-de-erros_001",
+      "name": "Monitor de Erros",
+      "version": "1.0.0",
+      "n8n_workflow_id": "VuLrRkDdhHCD2m0y",
+      "status": "active",
+      "auto_optimization": {
+        "enabled": true,
+        "frequency": "daily",
+        "performance_threshold": 0.85
+      },
+      "current_performance": {
+        "success_rate": 0.0,
+        "avg_response_time": 0.0,
+        "total_tests": 0,
+        "last_updated": null
+      },
+      "settings": {
+        "max_tokens": 1000,
+        "temperature": 0.7,
+        "timeout": 30
+      }
+    },
+    "integra\u00e7\u00e3o-whatsapp---teste": {
+      "workflow_id": "wf_integra\u00e7\u00e3o-whatsapp---teste_001",
+      "name": "Integra\u00e7\u00e3o WHATSAPP - TESTE",
+      "version": "1.0.0",
+      "n8n_workflow_id": "Ojs2mmNhApb0ZuaW",
+      "status": "active",
+      "auto_optimization": {
+        "enabled": true,
+        "frequency": "daily",
+        "performance_threshold": 0.85
+      },
+      "current_performance": {
+        "success_rate": 0.0,
+        "avg_response_time": 0.0,
+        "total_tests": 0,
+        "last_updated": null
+      },
+      "settings": {
+        "max_tokens": 1000,
+        "temperature": 0.7,
+        "timeout": 30
+      }
+    },
+    "sauda\u00e7\u00e3o---consultor": {
+      "workflow_id": "wf_sauda\u00e7\u00e3o---consultor_001",
+      "name": "Sauda\u00e7\u00e3o - Consultor",
+      "version": "1.0.0",
+      "n8n_workflow_id": "d7NJPbmIoYpZCaqa",
+      "status": "active",
+      "auto_optimization": {
+        "enabled": true,
+        "frequency": "daily",
+        "performance_threshold": 0.85
+      },
+      "current_performance": {
+        "success_rate": 0.0,
+        "avg_response_time": 0.0,
+        "total_tests": 0,
+        "last_updated": null
+      },
+      "settings": {
+        "max_tokens": 1000,
+        "temperature": 0.7,
+        "timeout": 30
+      }
+    },
+    "comercial---consultor": {
+      "workflow_id": "wf_comercial---consultor_001",
+      "name": "Comercial - Consultor",
+      "version": "1.0.0",
+      "n8n_workflow_id": "lM9kCZbVaFRnVWid",
+      "status": "active",
+      "auto_optimization": {
+        "enabled": true,
+        "frequency": "daily",
+        "performance_threshold": 0.85
+      },
+      "current_performance": {
+        "success_rate": 0.0,
+        "avg_response_time": 0.0,
+        "total_tests": 0,
+        "last_updated": null
+      },
+      "settings": {
+        "max_tokens": 1000,
+        "temperature": 0.7,
+        "timeout": 30
+      }
+    },
+    "monitor-de-erros---bable-pet": {
+      "workflow_id": "wf_monitor-de-erros---bable-pet_001",
+      "name": "Monitor de Erros - Bable Pet",
+      "version": "1.0.0",
+      "n8n_workflow_id": "owpm52YxuelorJsi",
+      "status": "active",
+      "auto_optimization": {
+        "enabled": true,
+        "frequency": "daily",
+        "performance_threshold": 0.85
+      },
+      "current_performance": {
+        "success_rate": 0.0,
+        "avg_response_time": 0.0,
+        "total_tests": 0,
+        "last_updated": null
+      },
+      "settings": {
+        "max_tokens": 1000,
+        "temperature": 0.7,
+        "timeout": 30
+      }
+    },
+    "faq---consultor": {
+      "workflow_id": "wf_faq---consultor_001",
+      "name": "FAQ - CONSULTOR",
+      "version": "1.0.0",
+      "n8n_workflow_id": "Q8TlBCT8t9lYEZgF",
+      "status": "active",
+      "auto_optimization": {
+        "enabled": true,
+        "frequency": "daily",
+        "performance_threshold": 0.85
+      },
+      "current_performance": {
+        "success_rate": 0.0,
+        "avg_response_time": 0.0,
+        "total_tests": 0,
+        "last_updated": null
+      },
+      "settings": {
+        "max_tokens": 1000,
+        "temperature": 0.7,
+        "timeout": 30
+      }
+    },
+    "indefinido---consultor": {
+      "workflow_id": "wf_indefinido---consultor_001",
+      "name": "Indefinido - Consultor",
+      "version": "1.0.0",
+      "n8n_workflow_id": "tnJw6bXGiEZB5r0y",
+      "status": "active",
+      "auto_optimization": {
+        "enabled": true,
+        "frequency": "daily",
+        "performance_threshold": 0.85
+      },
+      "current_performance": {
+        "success_rate": 0.0,
+        "avg_response_time": 0.0,
+        "total_tests": 0,
+        "last_updated": null
+      },
+      "settings": {
+        "max_tokens": 1000,
+        "temperature": 0.7,
+        "timeout": 30
+      }
+    }
+  }
+}

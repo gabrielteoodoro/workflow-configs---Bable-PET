@@ -1,0 +1,786 @@
+{
+  "name": "Agendamento - Consultor",
+  "nodes": [
+    {
+      "parameters": {
+        "model": "gpt-4.1-mini",
+        "options": {
+          "temperature": 0,
+          "topP": 1
+        }
+      },
+      "id": "977b49b5-b604-443b-9f63-44002a65041d",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        160,
+        128
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "PXSzJ5MnTq5eTu15",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ JSON.stringify($json) }}",
+        "options": {
+          "systemMessage": "=# Prompt: Agente Agendamento - Consultor (v29.4 - Manual de Ferramentas Restaurado)\n\n## 1. Papel e Missão\n- **Identidade:** Você é o \"Consultor Especialista em Agendamento\" da Bable Pet.\n- **Sua Missão:** Gerenciar o ciclo de vida completo de um agendamento (criação, remarcação, cancelamento) seguindo rigorosamente o manual de operações abaixo. A cada passo, você deve manter e preencher uma \"Ficha de Atendimento\" interna.\n- **Regra de Saída:** Sua única saída é um relatório JSON (`feedback_agendamento`).\n\n## 2. Sua Memória de Trabalho: A Ficha de Atendimento\n- A cada execução, sua primeira tarefa é criar ou atualizar esta ficha:\n    - `cliente_nome`, `email`, `pet_nome`, `pet_raca`, `pet_tamanho`\n    - `data_agendamento`, `hora_agendamento`, `servico`\n    - `id_evento_calendar`, `id_atendimento_planilha`\n\n## 3. Seu Manual de Ferramentas\n- **Suporte:**\n    - `think1`: Use **obrigatoriamente** no início de cada raciocínio para planejar seus passos.\n    - `buscarScript(ID_Cenario: string)`: Use para obter o texto da mensagem com base no `ID_Cenario` que você decidiu.\n    - `Calculator`: Use para gerar listas de horários em intervalos de 30 minutos.\n- **Dados do Cliente:**\n    - `buscarDadosCliente(sessionId: string)`: Esta ferramenta é usada pelo `Agente de Saudação`. Você **receberá** os dados dela através do relatório `feedback_saudacao` e deve usá-los para preencher sua Ficha de Atendimento.\n- **Calendário e Registro (Siga a Ordem Lógica):**\n    - `listarEvento(timeMin: string, timeMax: string)`: Use para verificar a disponibilidade na agenda para uma data específica antes de apresentar os horários.\n    - `criarEvento(start: string, end: string, summary: string, attendees: array)`: Use para criar o evento na agenda DEPOIS de ter todos os dados (data, hora, e-mail).\n    - `criaAtendimento(cliente_nome: string, email: string, pet_nome: string, ID_Agendamento: string, ...)`: Use **OBRIGATORIAMENTE** logo após `criarEvento`. Você deve pegar o ID do evento retornado por `criarEvento`, adicioná-lo à Ficha de Atendimento e então passar todos os dados da Ficha para esta ferramenta.\n    - `buscaIDAtendimento(...)`: Use para encontrar um agendamento existente na planilha ANTES de tentar remarcar ou cancelar.\n    - `remarcarEvento(eventId: string, start: string, end: string)`: Use para alterar um evento existente DEPOIS de ter encontrado o `eventId` com `buscaIDAtendimento`.\n    - `desmarcarEvento(eventId: string)`: Use para apagar um evento da agenda DEPOIS de ter encontrado o `eventId`.\n    - `excluiAtendimento(...)`: Use **OBRIGATORIAMENTE** logo após `desmarcarEvento` para remover o registro da planilha.\n\n## 4. Manual de Procedimentos (Siga a Ordem)\n\n**PROCEDIMENTO 1: INICIALIZAÇÃO**\n1.  **Planeje:** Invoque `think1`.\n2.  **Inicialize a Ficha:** Analise o `relatorio_saudacao`. Extraia o objeto `dados_cliente` e use-o para pré-preencher sua \"Ficha de Atendimento\". Se o cliente for novo, preencha a Ficha com DDD/Telefone do `sessionId`.\n\n**PROCEDIMENTO 2: SELEÇÃO DA TAREFA**\n- Com a Ficha inicializada, escolha a tarefa correta abaixo, seguindo a hierarquia.\n\n    ---\n    **TAREFA A: EXECUTAR ORDEM DIRETA (Prioridade Máxima)**\n    - **Condição:** Analise a chave `id_script_sugerido` dentro do objeto `relatorio_saudacao`. Se esta chave existir e tiver um valor que corresponda a `CONFIRMAR_PET_CADASTRADO` ou `COLETAR_NOME_TUTOR`.\n    - **Plano:** Seu plano é usar o `id_script_sugerido` exato que veio do `relatorio_saudacao`.\n    - **Ação:** Construa o relatório com este plano e finalize. **Não prossiga para as Tarefas B ou C.**```\n    ---\n    **TAREFA B: GERENCIAR AGENDAMENTO EXISTENTE**\n    - **Condição:** Se o `chatInput` do cliente contém \"remarcar\", \"cancelar\", \"mudar horário\".\n    - **Plano:**\n        1. Use `buscaIDAtendimento` para encontrar o agendamento.\n        2. Siga o fluxo de remarcação/cancelamento, usando as ferramentas e scripts apropriados.\n    - **Ação:** Construa o relatório com o plano e finalize.\n\n    ---\n   **TAREFA C: CONTINUAR FLUXO DE CRIAÇÃO (LÓGICA ATUALIZADA)**\n    - **Condição:** Se as tarefas A e B não se aplicam, continue a conversa.\n    - **Plano (siga a sequência):**\n        1.  **SE a Ficha não tem `cliente_nome`:** Inicie a coleta com `script_sugerido: \"COLETAR_NOME_TUTOR\"`.\n        2.  **SE a última pergunta foi sobre NOME/RAÇA/TAMANHO do PET:** Atualize a Ficha e pergunte o próximo dado.\n        3.  **SE a última pergunta foi sobre o PET (ou a confirmação):**\n    - **Sua Ação:** O pet está definido. O próximo passo é qualificar o serviço.\n    - **Lógica de Qualificação de Serviço:**\n        a. Analise o `chatInput` inicial da conversa (ex: \"Queria agendar um **banho**\").\n        b. **SE** o serviço mencionado for a palavra genérica \"banho\":\n            - **Próximo passo:** `script_sugerido: \"SOLICITAR_TIPO_BANHO\"`.\n        c. **SENÃO (se o serviço for outro, ou não foi mencionado):**\n            - **Próximo passo:** `script_sugerido: \"SOLICITAR_SERVICO\"`.\n        4.  **SE a última pergunta foi sobre o SERVIÇO (ou tipo de serviço):**\n            - **Sua Ação:** **Atualize a Ficha** com o serviço específico informado. O próximo passo é a data.\n            - **Próximo passo:** `script_sugerido: \"COLETAR_DATA\"`.\n        5.  **SE a última pergunta foi a DATA:** Próximo passo é `script_sugerido: \"SOLICITAR_PERIODO_DIA\"`.\n        6.  **SE a última pergunta foi o PERÍODO:** Use `listarEvento` e `Calculator` para gerar vagas e o próximo passo é `script_sugerido: \"APRESENTAR_VAGAS\"`.\n        7.  **SE a última pergunta foi sobre as VAGAS:** Atualize a Ficha com o horário e verifique o e-mail (use `CONFIRMAR_EMAIL_EXISTENTE` ou `COLETAR_EMAIL_NOVO`).\n        8.  **SE a última pergunta foi o EMAIL:** A Ficha está completa.\n            - **Procedimento de Finalização:**\n                a. **Personalize o Título do Evento:** Crie um `summary` para o calendário, como: \"[servico] - [pet_nome] ([cliente_nome])\".\n                b. Use `criarEvento` com o `summary` personalizado.\n                c. Use **obrigatoriamente** `criaAtendimento` com todos os dados da Ficha.\n            - **Próximo passo:** `script_sugerido: \"CONFIRMACAO_AGENDAMENTO\"`.\n    - **Ação:** Construa o relatório com o plano e finalize.\n\n**PROCEDIMENTO 3: VALIDAR O PLANO E OBTER O SCRIPT (NOVO PASSO)**\n- **Ação Obrigatória:** Agora que você decidiu qual `script_sugerido` usar no Procedimento 2, você DEVE validá-lo.\n- **Lógica:** Invoque a ferramenta **`buscarScript(ID_Cenario: SEU_SCRIPT_SUGERIDO)`**.\n- **Resultado:** Armazene o texto retornado pela ferramenta. Ele será usado no relatório final.\n\n## 4. Manual de Procedimentos (Siga a Ordem)\n\n**PROCEDIMENTO 1: INICIALIZAÇÃO**\n1.  **Planeje:** Invoque `think1`.\n2.  **Inicialize a Ficha:** Analise o `relatorio_saudacao`. Extraia o objeto `dados_cliente` e use-o para pré-preencher sua \"Ficha de Atendimento\". Se o cliente for novo, preencha a Ficha com DDD/Telefone do `sessionId`.\n\n**PROCEDIMENTO 2: SELEÇÃO DA TAREFA**\n- Com a Ficha inicializada, escolha a tarefa correta abaixo, seguindo a hierarquia.\n\n    ---\n    **TAREFA A: EXECUTAR ORDEM DIRETA (Prioridade Máxima)**\n    - **Condição:** Se o `relatorio_saudacao` contém um `id_script_sugerido` válido (como `CONFIRMAR_PET_CADASTRADO`).\n    - **Plano:** Seu plano é usar o `id_script_sugerido` que veio do `relatorio_saudacao`.\n    - **Ação:** Construa o relatório com este plano e finalize.\n\n    ---\n    **TAREFA B: GERENCIAR AGENDAMENTO EXISTENTE**\n    - **Condição:** Se o `chatInput` do cliente contém \"remarcar\", \"cancelar\", \"mudar horário\".\n    - **Plano:**\n        1. Use `buscaIDAtendimento` para encontrar o agendamento.\n        2. Siga o fluxo de remarcação/cancelamento, usando as ferramentas e scripts apropriados.\n    - **Ação:** Construa o relatório com o plano e finalize.\n\n    ---\n    **TAREFA C: CONTINUAR FLUXO DE CRIAÇÃO**\n    - **Condição:** Se as tarefas A e B não se aplicam, continue a conversa.\n    - **Plano (siga a sequência):**\n\n        **0. Ponto de Entrada (se for a primeira ação do agendamento):**\n            - **Condição:** Analise o histórico. Se esta é a primeira vez que você (Agente de Agendamento) está agindo nesta conversa (ou seja, a `prioridade_mestre` foi delegada a você, mas não há uma pergunta sua pendente).\n            - **Lógica de Início:**\n                a. Analise a Ficha de Atendimento que você preencheu no Procedimento 1. O campo `pet_nome` está preenchido?\n                b. **SE SIM (cliente cadastrado com pet):** O próximo passo obrigatório é `script_sugerido: \"CONFIRMAR_PET_CADASTRADO\"`.\n                c. **SE NÃO (cliente novo ou sem pet):** O próximo passo obrigatório é `script_sugerido: \"COLETAR_NOME_TUTOR\"`.\n            - **Ação:** Com o próximo passo definido, prossiga para a montagem do relatório e finalize.\n\n        ---\n        *(A lógica abaixo só se aplica se o \"Ponto de Entrada\" já passou, ou seja, a conversa já está em andamento com você)*\n        ---\n\n        1.  **SE a última pergunta foi sobre NOME/RAÇA/TAMANHO do PET:** Atualize a Ficha e pergunte o próximo dado da sequência.\n        2.  **SE a última pergunta foi sobre o PET (ou a confirmação):** O próximo passo é `script_sugerido: \"SOLICITAR_SERVICO\"`.\n        3.  **SE a última pergunta foi sobre o SERVIÇO:** Próximo passo é `script_sugerido: \"COLETAR_DATA\"`.\n        4.  **SE a última pergunta foi a DATA:** Próximo passo é `script_sugerido: \"SOLICITAR_PERIODO_DIA\"`.\n        5.  **SE a última pergunta foi o PERÍODO:** Use `listarEvento` e `Calculator` para gerar vagas e o próximo passo é `script_sugerido: \"APRESENTAR_VAGAS\"`.\n        6.  **SE a última pergunta foi sobre as VAGAS:** Atualize a Ficha com o horário e verifique o e-mail (use `CONFIRMAR_EMAIL_EXISTENTE` ou `COLETAR_EMAIL_NOVO`).\n        7.  **SE a última pergunta foi o EMAIL:** A Ficha está completa.\n            - **Procedimento de Finalização:**\n                a. Personalize o Título do Evento: Crie um `summary` para o calendário.\n                b. Use `criarEvento` com o `summary` personalizado.\n                c. Use **obrigatoriamente** `criaAtendimento` com todos os dados da Ficha.\n            - **Próximo passo:** `script_sugerido: \"CONFIRMACAO_AGENDAMENTO\"`.\n    - **Ação:** Construa o relatório com o plano e finalize.\n\n## 5. Formato de Saída (JSON Obrigatório)\n```json\n{\n  \"feedback_agendamento\": {\n    \"id_script_sugerido\": \"ID_DO_CENARIO_ESCOLHIDO\",\n    \"script_sugerido\": \"O TEXTO COMPLETO DO SCRIPT QUE VOCÊ BUSCOU\",\n    \"variaveis\": { ... },\n    \"ficha_atendimento\": { ... },\n    \"analise\": \"...\",\n    \"status_operacao\": \"...\"\n  }\n}"
+        }
+      },
+      "id": "9a13bd8f-68fe-46d6-a4d8-009d94363d07",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        400,
+        -96
+      ],
+      "notesInFlow": false
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        32,
+        128
+      ],
+      "id": "20936dfe-4b5b-43a1-822b-b2f2ed9bace6",
+      "name": "think1"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "2e3cf7e8-f17f-4b36-a73c-2de34d74f8fb",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -432,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.ID }}",
+        "tableName": "n8n_chat_histories_bable"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        288,
+        112
+      ],
+      "id": "a03b4b20-9398-4a3b-9d6a-8b09e1125999",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "sOvQacSZvritgCiJ",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Util para desmarcar um evento",
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "bableatendimento@gmail.com",
+          "mode": "list",
+          "cachedResultName": "bableatendimento@gmail.com"
+        },
+        "eventId": "={{ $fromAI(\"eventId\", \"id do evento correspondente para ser desmarcado\") }}",
+        "options": {
+          "sendUpdates": "all"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        704,
+        320
+      ],
+      "id": "a44d206e-87ea-450b-ae3a-0a7936a5b16f",
+      "name": "desmarcarEvento",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "jaEAckPlBREFaJU9",
+          "name": "Google Calendar - bableAtendimento"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Útil para remarcar os eventos com base no evento encontrado no email ja criado",
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "bableatendimento@gmail.com",
+          "mode": "list",
+          "cachedResultName": "bableatendimento@gmail.com"
+        },
+        "eventId": "={{ $fromAI(\"eventId\", \"id do evento correspondente para ser remarcado\") }}",
+        "updateFields": {
+          "end": "={{ $fromAI(\"dataFim\", \"data e hora final da remarcação do agendamento\", \"string\") }}",
+          "sendUpdates": "all",
+          "start": "={{ $fromAI(\"dataInicio\", \"data e hora da remarcação do agendamento\", \"string\") }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        592,
+        352
+      ],
+      "id": "f6f2c9b2-d76a-4b21-bede-c8f593992dcc",
+      "name": "remarcarEvento",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "jaEAckPlBREFaJU9",
+          "name": "Google Calendar - bableAtendimento"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Útil para verificar/buscar eventos no calendário.",
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "bableatendimento@gmail.com",
+          "mode": "list",
+          "cachedResultName": "bableatendimento@gmail.com"
+        },
+        "returnAll": true,
+        "timeMin": "={{ $fromAI(\"diaInicio\", \"dia do agendamento com horario fixo as 0h00 para busca\", \"string\") }}",
+        "timeMax": "={{ $fromAI(\"diaFim\", \" horarios para o dia até o horario de atendimento\", \"string\") }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        464,
+        352
+      ],
+      "id": "8c94cf1b-3107-4ff5-8613-31ba05c659d8",
+      "name": "listarEvento",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "jaEAckPlBREFaJU9",
+          "name": "Google Calendar - bableAtendimento"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Util para criar um evento na agenda e coletar ID Agendamento. Agendamento PET",
+        "calendar": {
+          "__rl": true,
+          "value": "bableatendimento@gmail.com",
+          "mode": "list",
+          "cachedResultName": "bableatendimento@gmail.com"
+        },
+        "start": "={{ $fromAI(\"dataInicio\", \"data e hora do agendamento\", \"string\") }}",
+        "end": "={{ $fromAI(\"dataFim\", \"data e hora do agendamento adicionado 45 minutos\", \"string\") }}",
+        "additionalFields": {
+          "attendees": [
+            "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('attendees0_Attendees', `email da pessoa se não disponivel solicite antes de continuar`, 'string') }}"
+          ],
+          "sendUpdates": "all",
+          "summary": "=Hora marcado pro meu amigo de quatro patas na Bable Pet: {{ $fromAI(\"nome\", \"nome da pessoa (colocar sempre a primeira letra em maiusculo caso a pessoa nao coloque)\") }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        320
+      ],
+      "id": "12473af8-4a0f-4fcc-9dfe-a6b6380d6772",
+      "name": "criarEvento",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "jaEAckPlBREFaJU9",
+          "name": "Google Calendar - bableAtendimento"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get row(s) in sheet in Google Sheets",
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1dK6NhKz1M_0c6Upm2nQUpIN0GafSMQzAGQ5Ri9WZhqU",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1310577900,
+          "mode": "list",
+          "cachedResultName": "Scripts Atendimento",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dK6NhKz1M_0c6Upm2nQUpIN0GafSMQzAGQ5Ri9WZhqU/edit#gid=1310577900"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "ID_Cenario",
+              "lookupValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values0_Value', `O valor exato da coluna 'ID_Cenario' da planilha que você precisa buscar.`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        896,
+        80
+      ],
+      "id": "6f70c5be-d00c-4d78-bd5a-a004c0a688f3",
+      "name": "buscarScript",
+      "credentials": {
+        "googleApi": {
+          "id": "azMCka72Em66GCJ5",
+          "name": "Google Drive SYNAPSE account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1q4KBHtTLlM4qZkMMRsC6wzWL9uDHc2EC5VQ_UG5ofkA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 267919806,
+          "mode": "list",
+          "cachedResultName": "Clientes Unificado",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q4KBHtTLlM4qZkMMRsC6wzWL9uDHc2EC5VQ_UG5ofkA/edit#gid=267919806"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "ID",
+              "lookupValue": "={{ $json.sessionId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        1056,
+        80
+      ],
+      "id": "6e87ac5e-ea6f-4c70-814e-8a9f1a5dc9da",
+      "name": "buscarDadosCliente",
+      "credentials": {
+        "googleApi": {
+          "id": "azMCka72Em66GCJ5",
+          "name": "Google Drive SYNAPSE account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "=Util para criação de atendimento após o uso da ferramenta criarEvento.",
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1q4KBHtTLlM4qZkMMRsC6wzWL9uDHc2EC5VQ_UG5ofkA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "=1229260907",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "cliente_nome": "={{ $fromAI(\"cliente_nome\", \"O nome do cliente vindo da Ficha de Atendimento\") }}",
+            "ddd": "={{ $fromAI(\"ddd\", \"O DDD do telefone do cliente vindo da Ficha de Atendimento\") }}",
+            "telefone": "={{ $fromAI(\"telefone\", \"O número de telefone do cliente vindo da Ficha de Atendimento\") }}",
+            "cliente_ativo": "={{ $fromAI(\"pet_ativo\", \"O status do pet, geralmente 'ativo', vindo da Ficha de Atendimento\") }}",
+            "pet_nome": "={{ $fromAI(\"pet_nome\", \"O nome do pet vindo da Ficha de Atendimento\") }}",
+            "pet_raca": "={{ $fromAI(\"pet_raca\", \"A raça do pet vinda da Ficha de Atendimento\") }}",
+            "pet_tamanho": "={{ $fromAI(\"pet_tamanho\", \"O tamanho ou grupo (G1-G5) do pet vindo da Ficha de Atendimento\") }}",
+            "pet_ativo": "={{ $fromAI(\"pet_ativo\", \"O status do pet, geralmente 'ativo', vindo da Ficha de Atendimento\") }}",
+            "loja": "={{ $fromAI(\"loja\", \"O nome da loja, geralmente 'Bable Pet Piracicaba', vindo da Ficha de Atendimento\") }}",
+            "ID Agendamento": "={{ $fromAI(\"ID_Agendamento\", \"O ID do evento do Google Calendar, vindo da Ficha de Atendimento após usar 'criarEvento'\") }}",
+            "email": "={{ $fromAI(\"email\", \"O e-mail do cliente vindo da Ficha de Atendimento\") }}",
+            "ID": "={{ $fromAI(\"ID\", \"O ID do cliente (sessionId), vindo da Ficha de Atendimento.\") }}"
+          },
+          "matchingColumns": [
+            "ID Agendamento"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ID Agendamento",
+              "displayName": "ID Agendamento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "cliente_nome",
+              "displayName": "cliente_nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ddd",
+              "displayName": "ddd",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cliente_ativo",
+              "displayName": "cliente_ativo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pet_nome",
+              "displayName": "pet_nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pet_raca",
+              "displayName": "pet_raca",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pet_tamanho",
+              "displayName": "pet_tamanho",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pet_ativo",
+              "displayName": "pet_ativo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "loja",
+              "displayName": "loja",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        640,
+        512
+      ],
+      "id": "429ef1bd-92cb-4275-8ce1-e82c39a651ee",
+      "name": "criaAtendimento",
+      "credentials": {
+        "googleApi": {
+          "id": "azMCka72Em66GCJ5",
+          "name": "Google Drive SYNAPSE account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "1q4KBHtTLlM4qZkMMRsC6wzWL9uDHc2EC5VQ_UG5ofkA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1229260907,
+          "mode": "list",
+          "cachedResultName": "Clientes Bable Pet Piracicaba",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q4KBHtTLlM4qZkMMRsC6wzWL9uDHc2EC5VQ_UG5ofkA/edit#gid=1229260907"
+        },
+        "startIndex": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start_Row_Number', `Pega linha com ID do atendimento ativo a ser desmarcado`, 'number') }}"
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        816,
+        496
+      ],
+      "id": "df2e60cb-3a82-4905-b1b6-2d93314642d3",
+      "name": "excluiAtendimento",
+      "credentials": {
+        "googleApi": {
+          "id": "azMCka72Em66GCJ5",
+          "name": "Google Drive SYNAPSE account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f9d4c07e-418b-43db-b84d-60a07acd1930",
+              "name": "feedback_agendamento",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        864,
+        -96
+      ],
+      "id": "d1597597-85f0-4fc4-bbf1-a8bdfc7c426f",
+      "name": "retornaAgendamento"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1q4KBHtTLlM4qZkMMRsC6wzWL9uDHc2EC5VQ_UG5ofkA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1229260907,
+          "mode": "list",
+          "cachedResultName": "Clientes Bable Pet Piracicaba",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q4KBHtTLlM4qZkMMRsC6wzWL9uDHc2EC5VQ_UG5ofkA/edit#gid=1229260907"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "ID Agendamento",
+              "lookupValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values0_Value', `Busca existencia do ID de agendamento ativo, se existe ou não o id retornado pelo criaEvento`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        448,
+        512
+      ],
+      "id": "615a453d-e9ba-414a-9ab8-ec2a9a4482db",
+      "name": "buscaIDAtendimento",
+      "credentials": {
+        "googleApi": {
+          "id": "azMCka72Em66GCJ5",
+          "name": "Google Drive SYNAPSE account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Se a pessoa não passar o email- agente tem o id cliente"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -192
+      ],
+      "id": "76c357cf-165a-447c-b532-654e76249389",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        128
+      ],
+      "id": "35e2a463-aed6-4f01-8c41-c2807610198c",
+      "name": "Calculator"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "chatInput": "Queria agendar um banho para meu pet",
+          "intencao_orquestrador": "{\n  \"intencoes\": [\"AGENDAMENTO\", \"COMERCIAL\"]\n}",
+          "ID": "5516993448117@s.whatsapp.net",
+          "dataAtual": "08/08/2025 13:59:30",
+          "diaSemana": "sexta-feira",
+          "statusFuncionamento": "ABERTO",
+          "account_id": "2",
+          "conversation_id": "4",
+          "relatorio_saudacao": "{\n  \"feedback_saudacao\": {\n    \"fase_conversa\": \"INÍCIO DA CONVERSA\",\n    \"script_sugerido\": null,\n    \"script_personalizado\": null,\n    \"prioridade_mestre\": \"feedback_agendamento\",\n    \"analise\": \"Cliente iniciou fluxo de agendamento com a loja aberta. Delegando para o especialista para continuidade do atendimento.\",\n    \"dados_cliente\": {\n      \"status_cliente\": \"CADASTRADO\",\n      \"ID\": \"5516993448117@s.whatsapp.net\",\n      \"Email\": \"gabriel.teodoro.batista@gmail.com\",\n      \"Cliente\": \"Gabriel Batista\",\n      \"DDD\": 16,\n      \"Telefone\": 993448117,\n      \"Status Cliente\": \"ativo\",\n      \"Nome do Pet\": \"1. Lira\",\n      \"Raça do Pet\": \"1. Indeterminada até 35 cm\",\n      \"Tamanho do Pet\": \"1. G2 - Pequeno\",\n      \"Status do Pet\": \"1. ativo\",\n      \"Loja\": \"Bable Pet Piracicaba\",\n      \"Visitas\": 1\n    }\n  }\n}"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "think1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "desmarcarEvento": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "remarcarEvento": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "listarEvento": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "criarEvento": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "buscarScript": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "buscarDadosCliente": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "criaAtendimento": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "retornaAgendamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "excluiAtendimento": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "buscaIDAtendimento": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e96adc01-bdbc-4710-b941-33f4eea921d8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "836069c98be7bb9c8534cfa606f444c5a615cf745f1f63c1a8c13e5cf5345232"
+  },
+  "id": "KRlswJLa4CmAvWIL",
+  "tags": []
+}

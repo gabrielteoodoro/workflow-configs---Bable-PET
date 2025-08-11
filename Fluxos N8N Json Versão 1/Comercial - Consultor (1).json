@@ -1,0 +1,616 @@
+{
+  "name": "Comercial - Consultor",
+  "nodes": [
+    {
+      "parameters": {
+        "model": "gpt-4.1-mini",
+        "options": {
+          "temperature": 0.4,
+          "topP": 0.8
+        }
+      },
+      "id": "8e975469-5ced-4f9e-8945-c3bcef1a7f89",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        272,
+        160
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "PXSzJ5MnTq5eTu15",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        16,
+        160
+      ],
+      "id": "a59046c9-395b-44a6-8c71-a00f81f952ee",
+      "name": "think1"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        128,
+        160
+      ],
+      "id": "a4a37508-05d7-411b-b2e4-1b8dbaf8bdf4",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "c20ffe71-32f7-4a1b-a75c-c59e27efa6ff",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -96,
+        -48
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.ID }}",
+        "tableName": "n8n_chat_histories_bable"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        416,
+        160
+      ],
+      "id": "172532ee-34d3-49bb-8b13-018224c98b52",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "sOvQacSZvritgCiJ",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get row(s) in sheet in Google Sheets",
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1dK6NhKz1M_0c6Upm2nQUpIN0GafSMQzAGQ5Ri9WZhqU",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1310577900,
+          "mode": "list",
+          "cachedResultName": "Scripts Atendimento",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dK6NhKz1M_0c6Upm2nQUpIN0GafSMQzAGQ5Ri9WZhqU/edit#gid=1310577900"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Agente",
+              "lookupValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values0_Value', `comercial`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        912,
+        208
+      ],
+      "id": "f374139d-a58e-4638-8d8b-12982abcc974",
+      "name": "buscarScript",
+      "credentials": {
+        "googleApi": {
+          "id": "azMCka72Em66GCJ5",
+          "name": "Google Drive SYNAPSE account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get row(s) in sheet in Google Sheets",
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1q4KBHtTLlM4qZkMMRsC6wzWL9uDHc2EC5VQ_UG5ofkA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 267919806,
+          "mode": "list",
+          "cachedResultName": "Clientes Unificado",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q4KBHtTLlM4qZkMMRsC6wzWL9uDHc2EC5VQ_UG5ofkA/edit#gid=267919806"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "ID",
+              "lookupValue": "={{ $json.sessionId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        1072,
+        192
+      ],
+      "id": "4e1caa55-777f-4ecd-923b-1d8976c6a8e9",
+      "name": "buscarDadosCliente",
+      "credentials": {
+        "googleApi": {
+          "id": "azMCka72Em66GCJ5",
+          "name": "Google Drive SYNAPSE account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get row(s) in sheet in Google Sheets",
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1cLlSTBJXtXo1oPtg2VrAITOhHn8QASo7pIpxrnrku1E",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 169714012,
+          "mode": "list",
+          "cachedResultName": "Beneficios Clube de Assinaturas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cLlSTBJXtXo1oPtg2VrAITOhHn8QASo7pIpxrnrku1E/edit#gid=169714012"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Info",
+              "lookupValue": "Util para verificar beneficios da Assiantura do Clube de Abanhos"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        768,
+        208
+      ],
+      "id": "6834fdd9-5c4f-4ce4-94d2-e54157808599",
+      "name": "beneficiosAssinatura",
+      "credentials": {
+        "googleApi": {
+          "id": "azMCka72Em66GCJ5",
+          "name": "Google Drive SYNAPSE account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get row(s) in sheet in Google Sheets",
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1q4KBHtTLlM4qZkMMRsC6wzWL9uDHc2EC5VQ_UG5ofkA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 897353158,
+          "mode": "list",
+          "cachedResultName": "Assinantes Piracicaba",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q4KBHtTLlM4qZkMMRsC6wzWL9uDHc2EC5VQ_UG5ofkA/edit#gid=897353158"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "ID",
+              "lookupValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values0_Value', `Verifica se Cliente é assinante.`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        1248,
+        192
+      ],
+      "id": "ed3c53b3-99d3-4441-aa8a-7258ae0cfd89",
+      "name": "buscaAssinates",
+      "credentials": {
+        "googleApi": {
+          "id": "azMCka72Em66GCJ5",
+          "name": "Google Drive SYNAPSE account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ JSON.stringify($json) }}",
+        "options": {
+          "systemMessage": "# Prompt: Agente Comercial - Consultor (v10 - Gatilho Preciso)\n\n## 1. Papel e Missão Principal\n- **Identidade:** Você é o \"Consultor Comercial\" da Bable Pet. Sua especialidade é fornecer cotações precisas e apresentar os benefícios do nosso clube de assinatura.\n- **Sua Missão Dupla:**\n    1.  **Sempre (Ouvir):** Analisar a conversa e coletar passivamente os dados em uma \"Ficha Comercial\" interna (`cliente_nome`, `pet_nome`, `pet_raca`, `pet_tamanho`, `servico`).\n    2.  **Apenas quando Ativado (Agir):** Usar a Ficha Comercial para verificar os dados, solicitar o que falta, consultar preços e apresentar os valores e benefícios ao cliente.\n- **Regra de Saída:** Sua única saída é um relatório JSON (`feedback_comercial`).\n\n## 2. Ficha Comercial (Sua Memória de Trabalho)\n- A cada execução, você deve manter e atualizar uma estrutura de dados interna com os campos necessários para uma cotação:\n    - `cliente_nome`, `pet_nome`, `pet_raca`\n    - `pet_tamanho` (o grupo, ex: \"G1 - Mini\")\n    - `servico`\n\n## 3. Ferramentas Disponíveis\n- **`think1`**: Para planejar seu raciocínio.\n- **`racas_e_grupos(raca: string)`**: Para determinar o porte do pet a partir da raça.\n- **`precos_e_servicos(servico: string, grupo: string)`**: Para buscar o preço de um serviço.\n- **`buscaAssinantes(sessionId: string)`**: Para verificar se o cliente é membro do clube.\n- **`precosAssinatura(grupo: string)`**: Para buscar os valores dos planos de assinatura.\n- **`beneficiosAssinatura()`**: Para listar os benefícios do clube.\n- **`buscarScript(ID_Cenario: string)`**: Para obter textos padronizados.\n\n## 4. Algoritmo de Raciocínio (Hierárquico e Consolidado)\n\n### # Fluxo de Execução\n\n**Passo 1: Atualizar a Ficha Comercial (Ouvir Passivamente)**\n- **Ação:** Invoque `think1`. Analise o dossiê completo (`feedback_saudacao`, `feedback_agendamento`, `chatHistory`).\n- **Lógica:** Preencha ou atualize sua \"Ficha Comercial\" interna com qualquer informação nova que tenha surgido na conversa.\n\n**Passo 2: Verificar o Escopo para Agir (Lógica de Gatilho Preciso)**\n- **Ação:** Analise a `Mensagem Atual do Cliente` (`chatInput`).\n- **Lógica de Gatilho (REGRA INVIOLÁVEL):**\n    - Verifique se a mensagem contém palavras-chave explícitas de preço, como \"preço\", \"valor\", \"quanto custa\", \"custa quanto\", \"orçamento\".\n    - **SE** a mensagem contiver uma dessas palavras-chave:\n        - **Ação:** É sua vez de agir. Seu gatilho foi ativado. Prossiga para o Passo 3.\n    - **SE** a mensagem **NÃO** contiver nenhuma dessas palavras-chave (mesmo que a intenção do orquestrador inclua \"COMERCIAL\"):\n        - **Ação:** O cliente não está perguntando o preço *agora*. **NÃO INTERFIRA.**\n        - **Relatório:** Retorne um relatório de \"aguardando\" com `script_id_sugerido: null`, mas inclua sua Ficha Comercial atualizada.\n\n**Passo 3: DETERMINAR O PORTE DO PET (Ação Obrigatória se Ativado)**\n- **Ação:** Garanta que o campo `pet_tamanho` na sua Ficha esteja preenchido.\n- **Procedimento Obrigatório:**\n    1.  **Verifique a Ficha:** O `pet_tamanho` já tem um valor? Se sim, prossiga para o **Passo 4**.\n    2.  **Verifique a Raça:** O `pet_raca` tem um valor? Se sim, use a ferramenta `racas_e_grupos` com o valor limpo (sem \"1.\", etc.). Se a ferramenta retornar um grupo, atualize a Ficha e prossiga para o **Passo 4**. Se falhar, sugira o `script: \"SOLICITAR_TAMANHO_DO_PET\"` e **Pare aqui**.\n    3.  **Se Não Houver Raça:** Sugira o `script: \"SOLICITAR_RACA_DO_PET\"`. **Pare aqui**.\n\n**Passo 4: Consulta de Preços e Planos**\n- **Ação:** Com o `pet_tamanho` (grupo) garantido na Ficha, execute as consultas.\n- **Lógica Sequencial:**\n    1.  Se o `servico` na Ficha for genérico (ex: \"banho\"), sugira o `script: \"SOLICITAR_TIPO_BANHO\"` e **Pare aqui**.\n    2.  Se o `servico` for específico, use `precos_e_servicos`.\n    3.  Use `buscaAssinantes`.\n    4.  **SE NÃO for assinante:** Use `precosAssinatura` e `beneficiosAssinatura`. Sugira o `script: \"INFORMAR_PRECO_COM_OFERTA_CLUBE\"`.\n    5.  **SE JÁ for assinante:** Sugira o `script: \"INFORMAR_PRECO_ASSINANTE\"`.\n\n**Passo 5: Montar o Relatório Final**\n- **Ação:** Construa o `feedback_comercial` com o `script_id_sugerido` decidido e todas as `variaveis` necessárias.\n\n## 5. Formato de Saída (JSON)\n```json\n{\n  \"feedback_comercial\": {\n    \"consultor\": \"comercial\",\n    \"script_id_sugerido\": \"ID_DO_CENARIO_OU_NULL\",\n    \"ficha_comercial\": {\n      \"cliente_nome\": \"Gabriel\",\n      \"pet_nome\": \"Lira\",\n      \"pet_tamanho\": \"G2 - Pequeno\",\n      \"servico\": \"banho\"\n    },\n    \"analise\": \"Análise da sua execução.\",\n    \"variaveis\": { ... },\n    \"status_operacao\": { ... }\n  }\n}"
+        }
+      },
+      "id": "eb4f1aae-5df1-4de8-8505-e22bc38ae2fe",
+      "name": "Comercial - Consultor",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        528,
+        -48
+      ],
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f9d4c07e-418b-43db-b84d-60a07acd1930",
+              "name": "feedback_comercial",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        960,
+        -48
+      ],
+      "id": "8da5e48c-2132-416e-998a-9e7e9605a498",
+      "name": "retornaComercial"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get row(s) in sheet in Google Sheets",
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1cLlSTBJXtXo1oPtg2VrAITOhHn8QASo7pIpxrnrku1E",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 404420345,
+          "mode": "list",
+          "cachedResultName": "Preços e serviços",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cLlSTBJXtXo1oPtg2VrAITOhHn8QASo7pIpxrnrku1E/edit#gid=404420345"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Grupo",
+              "lookupValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values0_Value', `Util para selecionar preços por grupo de tamanho`, 'string') }}"
+            },
+            {
+              "lookupColumn": "Serviço",
+              "lookupValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values1_Value', `Útil para buscar preço pelo serviço solicitado.`, 'string') }}"
+            },
+            {
+              "lookupColumn": "Valor Avulso",
+              "lookupValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values2_Value', `Útil para verificar preço de serviço avulso sem assinatura.`, 'string') }}"
+            },
+            {
+              "lookupColumn": "Para Assinantes",
+              "lookupValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values3_Value', `Util para verificar preços para assinantes`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        432,
+        480
+      ],
+      "id": "35271753-6109-4f1e-9bea-c432a9b4db43",
+      "name": "precos_e_servicos",
+      "credentials": {
+        "googleApi": {
+          "id": "azMCka72Em66GCJ5",
+          "name": "Google Drive SYNAPSE account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get row(s) in sheet in Google Sheets",
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1cLlSTBJXtXo1oPtg2VrAITOhHn8QASo7pIpxrnrku1E",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1035088372,
+          "mode": "list",
+          "cachedResultName": "Preços Pacotes Assinatura",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cLlSTBJXtXo1oPtg2VrAITOhHn8QASo7pIpxrnrku1E/edit#gid=1035088372"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Grupo",
+              "lookupValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values0_Value', `Útil para verificar preço de pacotes de assinatura por grupo`, 'string') }}"
+            },
+            {
+              "lookupColumn": "Produto",
+              "lookupValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values1_Value', `Útil para verificar quantidade de banho no pacote.`, 'string') }}"
+            },
+            {
+              "lookupColumn": "Valor Mensal",
+              "lookupValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values2_Value', `Útil para verificar valor do pacote de assinatura.`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        592,
+        480
+      ],
+      "id": "e9ccec3c-94d0-4463-b92f-73ac2d3d594f",
+      "name": "precosAssinatura",
+      "credentials": {
+        "googleApi": {
+          "id": "azMCka72Em66GCJ5",
+          "name": "Google Drive SYNAPSE account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get row(s) in sheet in Google Sheets",
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1cLlSTBJXtXo1oPtg2VrAITOhHn8QASo7pIpxrnrku1E",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 406952502,
+          "mode": "list",
+          "cachedResultName": "Raças e Grupos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cLlSTBJXtXo1oPtg2VrAITOhHn8QASo7pIpxrnrku1E/edit#gid=406952502"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Raça",
+              "lookupValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values0_Value', `Útil para verificar raça.`, 'string') }}"
+            },
+            {
+              "lookupColumn": "Grupo",
+              "lookupValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values1_Value', `Util para verificar grupo de tamnho conforme raça.`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        272,
+        480
+      ],
+      "id": "c4138236-f977-4eda-819f-da1b7616347f",
+      "name": "racas_e_grupos",
+      "credentials": {
+        "googleApi": {
+          "id": "azMCka72Em66GCJ5",
+          "name": "Google Drive SYNAPSE account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "chatInput": "Pode ser de manhã",
+          "intencao_orquestrador": "{\"intencoes\": [\"AGENDAMENTO\", \"COMERCIAL\"]}",
+          "sessionId": "5516993448117@s.whatsapp.net",
+          "dataAtual": "04/08/2025 14:44:49",
+          "diaSemana": "segunda-feira",
+          "statusFuncionamento": "ABERTO",
+          "account_id": "2",
+          "conversation_id": "4",
+          "relatorio_saudacao": "{\n  \"feedback_agendamento\": {\n    \"fase_conversa\": \"CONVERSA EM ANDAMENTO\",\n    \"script_sugerido\": null,\n    \"prioridade_mestre\": \"feedback_agendamento\",\n    \"dados_cliente\": {\n      \"ID\": \"5516993448117@s.whatsapp.net\",\n      \"Cliente\": \"Gabriel Batista\",\n      \"DDD\": 16,\n      \"Telefone\": 993448117,\n      \"Status Cliente\": \"ativo\",\n      \"Nome do Pet\": \"Lira\",\n      \"Raça do Pet\": \"Indeterminada até 35 cm\",\n      \"Tamanho do Pet\": \"G2 - Pequeno\",\n      \"Status do Pet\": \"ativo\",\n      \"Loja\": \"Bable Pet Piracicaba\",\n      \"Visitas\": 1,\n      \"status_cliente\": \"CADASTRADO\"\n    }\n  }\n}"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Comercial - Consultor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "think1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Comercial - Consultor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "Comercial - Consultor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Comercial - Consultor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Comercial - Consultor",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "buscarScript": {
+      "ai_tool": [
+        [
+          {
+            "node": "Comercial - Consultor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "buscarDadosCliente": {
+      "ai_tool": [
+        [
+          {
+            "node": "Comercial - Consultor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "beneficiosAssinatura": {
+      "ai_tool": [
+        [
+          {
+            "node": "Comercial - Consultor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "buscaAssinates": {
+      "ai_tool": [
+        [
+          {
+            "node": "Comercial - Consultor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Comercial - Consultor": {
+      "main": [
+        [
+          {
+            "node": "retornaComercial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "precos_e_servicos": {
+      "ai_tool": [
+        [
+          {
+            "node": "Comercial - Consultor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "precosAssinatura": {
+      "ai_tool": [
+        [
+          {
+            "node": "Comercial - Consultor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "racas_e_grupos": {
+      "ai_tool": [
+        [
+          {
+            "node": "Comercial - Consultor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f12f3d77-75bc-4193-aa83-f511854a184d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "836069c98be7bb9c8534cfa606f444c5a615cf745f1f63c1a8c13e5cf5345232"
+  },
+  "id": "lM9kCZbVaFRnVWid",
+  "tags": []
+}
